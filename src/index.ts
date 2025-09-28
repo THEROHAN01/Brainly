@@ -50,9 +50,10 @@ import express, { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
-import { UserModel, connectDB } from './db';
+import { UserModel, ContentModel, connectDB } from './db';
+import { userMiddleware } from './middleware';
 
-const JWT_PASSWORD = "Rohan" 
+const JWT_PASSWORD = "Rohan" ;
 const app = express();
 app.use(express.json());
 
@@ -110,17 +111,63 @@ app.post("/api/v1/signin",async (req,res) => {
 
 });
 
-app.post("/api/v1/content", (req,res) => {
-res.status(501).json({ message: "Not Implemented" });
+app.post("/api/v1/content",userMiddleware, (req,res) => {
+    const title = req.body.title;
+    const link = req.body.link ;
+    const type = req.body.type ;
+    ContentModel.create({
+        title,
+        link,
+        type,
+        //@ts-ignore
+        userId: req.userId,
+        tags: []
+    })
+
+    return res.json({
+        message: "Content add kardiya maine tera!!!"
+    })
+
 });
 
 
-app.get("/api/v1/content" , (req,res) =>{
-res.status(501).json({ message: "Not Implemented" });
+app.get("/api/v1/content" ,userMiddleware, async (req,res) =>{
+
+    //@ts-ignore
+    const userId = req.userId;
+    const content = await ContentModel.find({
+        userId: userId
+    }).populate("userId","username");
+    res.json({
+        content
+    });
+
+
 });
 
-app.delete("/api/v1/content", (req,res) =>{
-res.status(501).json({ message: "Not Implemented" });
+app.delete("/api/v1/content",userMiddleware,async (req,res) =>{
+
+    const contentId  = req.body.contentId;
+    if (!contentId){
+        return res.status(400).json({message:"content id nahi diya to content kaise delete karu bro"})
+    }
+    try {
+        const result = await ContentModel.findOneAndDelete({
+            _id: contentId,
+            //@ts-ignore
+            userId: req.userId 
+        });
+        if(!result){
+            return res.status(404).json({message: "content not found bro content id check kar"});
+        }
+        res.json({
+        message: "delete kar diya bro tera content"
+    });
+    }catch(error){
+        res.status(400).json({message: "Invalid contentId format "})
+    }
+    
+    
 });
 
 app.post("/api/v1/brain/share", (req,res) => {
