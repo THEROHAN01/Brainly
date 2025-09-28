@@ -52,6 +52,7 @@ import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
 import { UserModel, connectDB } from './db';
 
+const JWT_PASSWORD = "Rohan" 
 const app = express();
 app.use(express.json());
 
@@ -83,8 +84,30 @@ app.post("/api/v1/signup", async (req: Request, res: Response) => {
   }
 });
 
-app.post("/api/v1/signin", (req,res) => {
-    res.status(501).json({ message: "Not Implemented" });
+app.post("/api/v1/signin",async (req,res) => {
+    const {username , password } = req.body;
+    const salt = await bcrypt.genSalt(10);
+    const existingUser = await UserModel.findOne({username});
+    if (!existingUser){
+        return res.status(400).json({message: "tera user he nahi bana hai bro "})
+    }
+    const isMatch = await bcrypt.compare(password, existingUser.password);
+
+    if (isMatch){
+        const token  = jwt.sign({
+            id: existingUser._id
+        }, JWT_PASSWORD);
+
+        res.json({
+            token
+        })
+
+    }else {
+        res.status(403).json({
+            message: " Incorrect Credentials "
+        });        
+    }
+
 });
 
 app.post("/api/v1/content", (req,res) => {
