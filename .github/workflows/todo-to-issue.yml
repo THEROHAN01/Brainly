@@ -29,7 +29,10 @@ jobs:
           # You can customize this. For example: ["TODO", "FIXME", "REFACTOR"]
           # Using a specific keyword like "TODO-ISSUE" can be a good way to
           # explicitly choose which comments become issues.
-          IDENTIFIERS: '["TODO", "FIXME"]'
+          IDENTIFIERS: '[{"name": "TODO"}, {"name": "FIXME"}]'
+
+          # Prevent the action from scanning its own configuration file.
+          IGNORE: '.github/workflows/*'
 
           # Template for the issue body.
           # The content of the TODO comment will be added automatically after this template.
@@ -40,6 +43,3 @@ jobs:
             - **File:** `{{ FILE }}`
             - **Line:** `{{ LINE }}`
             ---
-          # Note: Labels and assignees are now configured directly in your code.
-          # For example:
-          # // TODO(@some-user, !bug, !refactor): Fix this memory leak.
