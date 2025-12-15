@@ -32,6 +32,14 @@
 // }
 // run().catch(console.dir);
 
+// TODO: Remove or archive dead/commented raw MongoDB driver code.
+// File Path: e:\\100xdev\\week-15\\week_15.1_Building2ndbrain\\Brainly\\src\\db.ts
+// Line Number(s): 1-33
+// Issue Description: The file contains a large commented section using the raw `mongodb` driver while the project
+// uses `mongoose`. The `mongodb` package is also present in `package.json`, leading to duplication and confusion.
+// Suggested Fix: Remove or archive the commented raw driver code. If `mongoose` is the only ORM used, remove `mongodb`
+// from `package.json` to avoid extra dependencies.
+
 
 //////////////////////////////////////////////schema design for the db /////////////////////////////////////////////////////
 
@@ -52,6 +60,11 @@ export const UserModel = mongoose.model("User", UserSchema);
 const ContentSchema = new Schema ({
     title : String,
     link  : String,
+    // TODO: `tags` references a missing `Tag` model.
+    // File Path: e:\\100xdev\\week-15\\week_15.1_Building2ndbrain\\Brainly\\src\\db.ts
+    // Line Number(s): 52-56
+    // Issue Description: `tags` is defined as `[{ type: ObjectId, ref: 'Tag' }]` but there is no `Tag` model in this file.
+    // Suggested Fix: Add a `Tag` schema and export `TagModel` (recommended) or change `tags` to `tags: [String]` if tags are simple labels.
     tags : [{type: mongoose.Types.ObjectId, ref:'Tag'}],
     userId: {type:mongoose.Types.ObjectId, ref:"User", required: true}
 
@@ -75,6 +88,12 @@ export const connectDB = async () => {
 
   }catch(error){
     console.error("Mongodb ka connection fail hogaya:", error);
+    // TODO: Avoid abrupt process exit on DB connect failure.
+    // File Path: e:\\100xdev\\week-15\\week_15.1_Building2ndbrain\\Brainly\\src\\db.ts
+    // Line Number(s): 66-80
+    // Issue Description: `connectDB` logs the error and calls `process.exit(1)`, which immediately terminates the process.
+    // Suggested Fix: Consider rethrowing the error to let the caller decide how to handle it, or implement retry/backoff logic
+    // for improved resilience during development and testing. Example: remove `process.exit(1)` and `throw error` instead.
     process.exit(1);
 
   }

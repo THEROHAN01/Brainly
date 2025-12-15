@@ -54,14 +54,34 @@ import { UserModel, ContentModel, connectDB } from './db';
 import { userMiddleware } from './middleware';
 
 const JWT_PASSWORD = "Rohan" ;
+
+// TODO: Hard-coded JWT secret and missing token expiry.
+// File Path: e:\\100xdev\\week-15\\week_15.1_Building2ndbrain\\Brainly\\src\\index.ts
+// Line Number(s): 49-57
+// Issue Description: `JWT_PASSWORD` is hard-coded in source and tokens are signed without an expiry. This is insecure
+// and prevents secret rotation or token invalidation.
+// Suggested Fix: Move the secret to environment as `JWT_SECRET` and use `jwt.sign(payload, JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || '7d' })`.
 const app = express();
 app.use(express.json());
+
+// TODO: Missing CORS configuration.
+// File Path: e:\\100xdev\\week-15\\week_15.1_Building2ndbrain\\Brainly\\src\\index.ts
+// Line Number(s): 58-60
+// Issue Description: CORS is not configured. If the frontend is served from a different origin, browser requests will be blocked.
+// Suggested Fix: Install `cors` and add `app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));` early in the middleware stack.
 
 connectDB();
 
 const PORT = process.env.PORT || 3000;
 
 app.post("/api/v1/signup", async (req: Request, res: Response) => {
+    // TODO: Missing input validation and inconsistent response shapes for signup.
+    // File Path: e:\\100xdev\\week-15\\week_15.1_Building2ndbrain\\Brainly\\src\\index.ts
+    // Line Number(s): 64-86
+    // Issue Description: Signup performs only presence checks and returns informal messages. There is no validation
+    // for username/password strength or standardized error response shape.
+    // Suggested Fix: Add request validation (e.g., `zod` or `express-validator`) to enforce username/password rules
+    // and standardize responses (e.g., `{ message, data? }` or `{ error: { code, message } }`).
   const { username, password } = req.body;
 
   if (!username || !password) {
@@ -95,6 +115,11 @@ app.post("/api/v1/signin",async (req,res) => {
     const isMatch = await bcrypt.compare(password, existingUser.password);
 
     if (isMatch){
+        // TODO: Sign tokens with environment secret and expiry.
+        // File Path: e:\\100xdev\\week-15\\week_15.1_Building2ndbrain\\Brainly\\src\\index.ts
+        // Line Number(s): 96-101
+        // Issue Description: Token is signed using a hard-coded secret and without expiry.
+        // Suggested Fix: Read `JWT_SECRET` and `JWT_EXPIRES_IN` from env and sign with `jwt.sign({ id }, JWT_SECRET, { expiresIn })`.
         const token  = jwt.sign({
             id: existingUser._id
         }, JWT_PASSWORD);
@@ -115,6 +140,13 @@ app.post("/api/v1/content",userMiddleware, (req,res) => {
     const title = req.body.title;
     const link = req.body.link ;
     const type = req.body.type ;
+    // TODO: `POST /api/v1/content` should validate input and await DB write.
+    // File Path: e:\\100xdev\\week-15\\week_15.1_Building2ndbrain\\Brainly\\src\\index.ts
+    // Line Number(s): 114-130
+    // Issue Description: The route does not validate `title`, `link`, `type` and calls `ContentModel.create` without awaiting it,
+    // so it returns success even if the DB write fails.
+    // Suggested Fix: Make the handler `async`, validate request body, `await ContentModel.create(...)` inside a try/catch,
+    // return `201` with the created document on success, and return `400`/`500` on validation/DB errors respectively.
     ContentModel.create({
         title,
         link,
@@ -170,6 +202,13 @@ app.delete("/api/v1/content",userMiddleware,async (req,res) =>{
     
 });
 
+/*
+** TODO **
+File Path: e:\\100xdev\\week-15\\week_15.1_Building2ndbrain\\Brainly\\src\\index.ts
+Line Number(s): 173-179
+Issue Description: `POST /api/v1/brain/share` and `GET /api/v1/brain/:shareLink` are not implemented (return 501). There is no model or contract for sharing brains.
+Suggested Fix: Define a `Share` model (ownerId, contentIds, shareLink, createdAt). Implement create and fetch handlers that persist and retrieve shared brains. If not implementing now, add clear TODOs and documentation of expected payloads.
+*/
 app.post("/api/v1/brain/share", (req,res) => {
 res.status(501).json({ message: "Not Implemented" });
 });
