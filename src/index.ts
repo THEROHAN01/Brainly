@@ -87,7 +87,7 @@ app.post("/api/v1/signup", async (req: Request, res: Response) => {
 
 app.post("/api/v1/signin",async (req,res) => {
     const {username , password } = req.body;
-    const salt = await bcrypt.genSalt(10);
+    // const salt = await bcrypt.genSalt(10);
     const existingUser = await UserModel.findOne({username});
     if (!existingUser){
         return res.status(400).json({message: "tera user he nahi bana hai bro "})
@@ -102,7 +102,7 @@ app.post("/api/v1/signin",async (req,res) => {
         res.json({
             token
         })
-
+        
     }else {
         res.status(403).json({
             message: " Incorrect Credentials "

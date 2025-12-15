@@ -1,0 +1,48 @@
+# .github/workflows/todo-to-issue.yml
+
+name: 'Create Issues from TODOs'
+
+# This workflow runs on every push to the main branch
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest # Use the latest available runner
+
+    steps:
+      # 1. Check out the repository's code
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 2. Run the TODO to Issue action
+      - name: Create Issues from TODOs
+        uses: alstr/todo-to-issue-action@v5
+        with:
+          # A token with permissions to create issues.
+          # The default GITHUB_TOKEN is perfect for this.
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+          # The keywords to look for in your code comments.
+          # You can customize this. For example: ["TODO", "FIXME", "REFACTOR"]
+          # Using a specific keyword like "TODO-ISSUE" can be a good way to
+          # explicitly choose which comments become issues.
+          KEYWORDS: '["TODO", "FIXME"]'
+
+          # How to label the created issues.
+          # You can add multiple labels, separated by commas.
+          LABEL: 'todo, tech-debt'
+
+          # A comment to add to the issue body. You can use markdown and variables.
+          # The {{ file }} and {{ line }} variables are especially useful.
+          COMMENT_MARKER: |
+            ---
+            *This issue was automatically generated from a `TODO` comment in your codebase.*
+            
+            - **File:** `{{ file }}`
+            - **Line:** `{{ line }}`
+
+          # Automatically assign the issue to the person who pushed the code.
+          ASSIGNEE: '${{ github.actor }}'
